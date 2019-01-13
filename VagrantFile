@@ -1,0 +1,44 @@
+Vagrant.configure("2") do |config|
+  config.vm.define "prodpsql01" do |prodpsql01|
+    prodpsql01.vm.box = "centos/7"
+    prodpsql01.vm.hostname = 'prodpsql01'
+    prodpsql01.vm.box_url = "centos/7"
+
+    prodpsql01.vm.network :public_network, ip: "192.168.56.101"
+    prodpsql01.vm.network :forwarded_port, guest: 22, host: 10122, id: "ssh"
+
+
+    prodpsql01.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--name", "prodpsql01"]
+    end
+  end
+
+  config.vm.define "prodpsql02" do |prodpsql02|
+    prodpsql02.vm.box = "centos/7"
+    prodpsql02.vm.hostname = 'prodpsql02'
+    prodpsql02.vm.box_url = "centos/7"
+
+    prodpsql02.vm.network :public_network, ip: "192.168.56.102"
+    prodpsql02.vm.network :forwarded_port, guest: 22, host: 10123, id: "ssh"
+
+
+    prodpsql02.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--name", "prodpsql02"]
+    end
+  end
+
+    if Vagrant::Util::Platform.windows?
+    config.vm.provision :ansible_local do |ansible|
+      ansible.playbook = "install/postgres.yml"
+    end
+  else
+    config.vm.provision :ansible do |ansible|
+      ansible.playbook = "install/postgres.yml"
+    end
+  end
+  
+end
